@@ -1,0 +1,51 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="0.12" cy="0.05" r="0.85">
+      <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.22"/>
+      <stop offset="55%" stop-color="#7aa2ff" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#7aa2ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.92" cy="0.95" r="0.6">
+      <stop offset="0%" stop-color="#5fd08a" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#5fd08a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7aa2ff"/>
+      <stop offset="100%" stop-color="#5fd08a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="#0e1013"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+  <rect width="1280" height="640" fill="url(#glow2)"/>
+
+  <rect x="88" y="98" width="7" height="266" rx="3.5" fill="url(#bar)"/>
+
+  <text x="126" y="124"
+        font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
+        font-size="21" font-weight="600" letter-spacing="3.4" fill="#7aa2ff">OPEN SOURCE, MIT, CLOUDFLARE WORKERS</text>
+
+  <text x="122" y="228"
+        font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
+        font-size="112" font-weight="700" letter-spacing="-3" fill="#eef1f5">deeplink</text>
+
+  <text x="126" y="304"
+        font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
+        font-size="37" font-weight="400" fill="#97a0ad">Opens the YouTube app, not Instagram's</text>
+  <text x="126" y="352"
+        font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
+        font-size="37" font-weight="400" fill="#97a0ad">in-app browser.</text>
+
+  <rect x="88" y="432" width="1104" height="86" rx="14" fill="#161a20" stroke="#262c35" stroke-width="1.5"/>
+  <text x="124" y="484" xml:space="preserve"
+        font-family="Consolas, Menlo, DejaVu Sans Mono, monospace"
+        font-size="25" fill="#6f7887">youtu.be/xyz<tspan fill="#3d4552">   &#8594;   </tspan><tspan fill="#7aa2ff">intent://</tspan><tspan fill="#3d4552"> or </tspan><tspan fill="#7aa2ff">youtube://</tspan><tspan fill="#3d4552">   &#8594;   </tspan><tspan fill="#5fd08a">app opens, signed in</tspan></text>
+
+  <text x="88" y="588"
+        font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
+        font-size="25" font-weight="500" fill="#eef1f5">github.com/manojpoudel9256/Deeplink</text>
+
+  <text x="1192" y="588" text-anchor="end"
+        font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
+        font-size="23" font-weight="400" fill="#6f7887">Instagram, Facebook, LinkedIn</text>
+</svg>
