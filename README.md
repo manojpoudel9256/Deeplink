@@ -57,12 +57,39 @@ dashboard under Workers → your worker → Settings → Domains.
 reusable. Your real ids belong in `wrangler.local.toml`, which is gitignored:
 
 ```bash
+npm install
 cp wrangler.toml wrangler.local.toml   # then paste your real KV id into it
-npx wrangler deploy -c wrangler.local.toml
+
+npm run deploy    # wrangler deploy -c wrangler.local.toml
+npm run dev       # local server on :8787
+npm run tail      # live production logs
 ```
 
 `ADMIN_TOKEN` is never in either file — it lives as a Worker secret in
 production and in `.dev.vars` for local dev. Both are gitignored.
+
+## The generator UI
+
+`/admin` serves a page for making links without touching curl: paste a video
+URL, optionally name it, press the button, copy the result. It also lists
+every link you've made with its click count.
+
+It is **not** a public page in any useful sense — every API call it makes
+carries your `ADMIN_TOKEN`, which you type once and which is then kept in
+`localStorage` on that device. Nothing secret is compiled into the page, so
+the source in this repo is safe to publish.
+
+Two deliberate choices:
+
+- It lives at `/admin`, not `/`, so a short link shared in a story never
+  advertises that a console sits on the same domain. The root stays a bare
+  `ok`.
+- The response carries `noindex`, `frame-ancestors 'none'`, and a CSP that
+  restricts `connect-src` to the worker's own origin. `/robots.txt` disallows
+  everything — a shortener has nothing a crawler should be indexing.
+
+Reserved codes (`admin`, `api`, `robots`, `favicon`) can't be claimed as
+short links, so a link can never shadow a route.
 
 ## Create a link
 
@@ -78,7 +105,10 @@ curl -X POST https://deeplink.<you>.workers.dev/api/links \
 ```
 
 Pass `"code":"myvideo"` to pick your own slug. Check clicks with
-`GET /api/links/<code>` using the same bearer token.
+`GET /api/links/<code>`, or list everything with `GET /api/links`, using the
+same bearer token.
+
+Or just use `/admin` and skip curl entirely.
 
 ## Testing it properly
 

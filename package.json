@@ -1,0 +1,15 @@
+{
+  "name": "deeplink",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "App-opening link shortener for escaping in-app browsers",
+  "scripts": {
+    "dev": "wrangler dev -c wrangler.local.toml",
+    "deploy": "wrangler deploy -c wrangler.local.toml",
+    "tail": "wrangler tail -c wrangler.local.toml"
+  },
+  "devDependencies": {
+    "wrangler": "^4.127.1"
+  }
+}

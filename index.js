@@ -2,9 +2,13 @@
  * Deep-link redirector.
  *
  * GET  /:code            -> resolve short code, escape the in-app browser
+ * GET  /admin            -> the generator UI      (token typed in-browser)
  * POST /api/links        -> create a short link   (Bearer ADMIN_TOKEN)
+ * GET  /api/links        -> list links + clicks   (Bearer ADMIN_TOKEN)
  * GET  /api/links/:code  -> click stats           (Bearer ADMIN_TOKEN)
  */
+
+import { ADMIN_HTML } from "./admin.js";
 
 // ---------------------------------------------------------------- targets
 
@@ -295,6 +299,9 @@ async function countClick(env, code, plat) {
 
 // ---------------------------------------------------------------- router
 
+/** Paths the router owns, so a short code can never shadow them. */
+const RESERVED = new Set(["admin", "api", "robots", "favicon"]);
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -302,6 +309,33 @@ export default {
 
     if (path === "/" || path === "/favicon.ico") {
       return new Response("ok", { status: 200 });
+    }
+
+    // ---- generator UI ----------------------------------------------------
+    // Static page, no token baked in. It asks the operator for one and keeps
+    // it in their own browser. Served off the root path so a shared short
+    // link never advertises that a console exists behind it.
+    if (path === "/admin") {
+      return new Response(ADMIN_HTML, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+          "Referrer-Policy": "no-referrer",
+          "X-Robots-Tag": "noindex, nofollow",
+          "X-Frame-Options": "DENY",
+          "Content-Security-Policy":
+            "default-src 'none'; style-src 'unsafe-inline'; " +
+            "script-src 'unsafe-inline'; connect-src 'self'; " +
+            "base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        },
+      });
+    }
+
+    // A shortener has nothing a crawler should index.
+    if (path === "/robots.txt") {
+      return new Response("User-agent: *\nDisallow: /\n", {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
     }
 
     // ---- create ----------------------------------------------------------
@@ -322,6 +356,8 @@ export default {
       const code = body.code || newCode();
       if (!/^[\w-]{3,32}$/.test(code))
         return json({ error: "code must be 3-32 word characters" }, 400);
+      if (RESERVED.has(code.toLowerCase()))
+        return json({ error: "that name is reserved" }, 409);
       if (await env.LINKS.get(`link:${code}`))
         return json({ error: "code already taken" }, 409);
 
@@ -331,6 +367,34 @@ export default {
       );
 
       return json({ code, short: `${url.origin}/${code}`, url: body.url }, 201);
+    }
+
+    // ---- list ------------------------------------------------------------
+    // Powers the table in the generator UI. Personal instances hold a handful
+    // of links, so reading each one's stats inline is cheap enough.
+    if (path === "/api/links" && request.method === "GET") {
+      if (!authorized(request, env))
+        return json({ error: "unauthorized" }, 401);
+
+      const listed = await env.LINKS.list({ prefix: "link:", limit: 1000 });
+      const links = await Promise.all(
+        listed.keys.map(async (key) => {
+          const code = key.name.slice("link:".length);
+          const [link, stats] = await Promise.all([
+            env.LINKS.get(key.name, "json"),
+            env.LINKS.get(`stats:${code}`, "json"),
+          ]);
+          return {
+            code,
+            url: link?.url || "",
+            created: link?.created || "",
+            clicks: stats?.total || 0,
+          };
+        }),
+      );
+      links.sort((a, b) => b.created.localeCompare(a.created));
+
+      return json({ links });
     }
 
     // ---- stats -----------------------------------------------------------
