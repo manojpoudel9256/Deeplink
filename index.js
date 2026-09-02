@@ -134,6 +134,7 @@ function detectPlatform(ua = "") {
   let shell = "browser";
   if (/Instagram/i.test(ua)) shell = "instagram";
   else if (/FBAN|FBAV|FB_IAB/i.test(ua)) shell = "facebook";
+  else if (/LinkedInApp/i.test(ua)) shell = "linkedin";
   else if (/Line\//i.test(ua)) shell = "line";
   else if (/Twitter/i.test(ua)) shell = "x";
   else if (/Snapchat/i.test(ua)) shell = "snapchat";
