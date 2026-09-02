@@ -2,6 +2,7 @@
   "name": "deeplink",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "App-opening link shortener for escaping in-app browsers",
   "scripts": {

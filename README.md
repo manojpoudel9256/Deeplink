@@ -168,3 +168,7 @@ if (host === "open.spotify.com") {
 
 Find the Android package name in the Play Store URL (`?id=com.spotify.music`).
 iOS schemes usually have to be found by searching or by inspecting the app.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Take it, fork it, break it.
