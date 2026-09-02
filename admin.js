@@ -62,6 +62,10 @@ export const ADMIN_HTML = String.raw`<!doctype html>
   input::placeholder { color: #5b6472; }
   .field + .field { margin-top: 14px; }
   .hint { margin: 6px 0 0; font-size: 12px; color: #6f7887; }
+  .hint code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--accent);
+  }
   button {
     font: inherit; font-weight: 600; cursor: pointer;
     border-radius: 9px; border: 1px solid transparent;
@@ -141,8 +145,8 @@ export const ADMIN_HTML = String.raw`<!doctype html>
       </div>
       <div class="field">
         <label for="slug">Custom name <span style="color:#5b6472">(optional)</span></label>
-        <input type="text" id="slug" placeholder="leave empty for a random one" autocomplete="off" spellcheck="false">
-        <p class="hint">3-32 characters: letters, numbers, hyphen, underscore.</p>
+        <input type="text" id="slug" placeholder="paste the video title, or leave empty" autocomplete="off" spellcheck="false" maxlength="200">
+        <p class="hint" id="slugHint">Spaces and punctuation are turned into hyphens automatically.</p>
       </div>
       <button class="primary" id="go" type="submit">Generate deeplink</button>
       <p class="msg" id="err"></p>
@@ -206,6 +210,40 @@ export const ADMIN_HTML = String.raw`<!doctype html>
     };
   }
 
+  /**
+   * Turn anything a human types into a legal short code. Pasting the video's
+   * own title is the natural thing to do, so accents, punctuation and spaces
+   * all have to survive the trip rather than being rejected.
+   */
+  function slugify(raw) {
+    return String(raw)
+      .normalize('NFKD')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+/, '')
+      .slice(0, 32)
+      .replace(/-+$/, '');
+  }
+
+  var slugBox = $('slug');
+
+  function updateSlugHint() {
+    var hint = $('slugHint');
+    var raw = slugBox.value.trim();
+    if (!raw) {
+      hint.textContent = 'Spaces and punctuation are turned into hyphens automatically.';
+      return;
+    }
+    var slug = slugify(raw);
+    if (slug.length < 3) {
+      hint.textContent = 'Too short once cleaned up, so a random name will be used.';
+    } else {
+      hint.innerHTML = 'Saved as <code>/' + esc(slug) + '</code>';
+    }
+  }
+
+  slugBox.addEventListener('input', updateSlugHint);
+
   function explain(status, data) {
     if (status === 401) return 'Token rejected. Check your ADMIN_TOKEN.';
     if (status === 409) return 'That custom name is taken. Try another.';
@@ -221,8 +259,8 @@ export const ADMIN_HTML = String.raw`<!doctype html>
     if (!token) { fail('Enter your admin token first.'); return; }
 
     var payload = { url: $('url').value.trim() };
-    var slug = $('slug').value.trim();
-    if (slug) payload.code = slug;
+    var slug = slugify(slugBox.value);
+    if (slug.length >= 3) payload.code = slug;
 
     var btn = $('go');
     btn.disabled = true;
@@ -243,8 +281,9 @@ export const ADMIN_HTML = String.raw`<!doctype html>
       a.textContent = lastShort;
       a.href = lastShort;
       $('result').className = 'on';
-      $('slug').value = '';
+      slugBox.value = '';
       $('url').value = '';
+      updateSlugHint();
       $('copy').textContent = 'Copy link';
       refresh();
       $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
